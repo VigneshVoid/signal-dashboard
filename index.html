@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGNAL — AI Research Brief</title>
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --accent: #b91c1c;
+    --muted: #78716c;
+    --rule: #d6d0c4;
+    --tint: #ede8de;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: Georgia, serif; min-height: 100vh; }
+
+  /* MASTHEAD */
+  header { border-bottom: 4px solid var(--ink); padding: 20px 24px 16px; display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .logo { font-size: 3rem; font-weight: 700; letter-spacing: -2px; line-height: 1; }
+  .logo span { color: var(--accent); }
+  .sub { font-family: monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .datebox { text-align: right; }
+  .datebox .d { font-family: monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .datebox .u { font-family: monospace; font-size: 0.6rem; color: #a8a29e; margin-top: 2px; }
+
+  /* TABS */
+  nav { display: flex; border-bottom: 1px solid var(--rule); overflow-x: auto; padding: 0 24px; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  .tab { font-family: monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 10px 14px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; white-space: nowrap; margin-bottom: -1px; transition: color 0.1s; }
+  .tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--ink); }
+
+  /* CONTENT */
+  main { max-width: 800px; margin: 0 auto; padding: 0 24px 48px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* SECTION HEADER */
+  .sec-head { display: flex; align-items: center; gap: 12px; padding: 20px 0 14px; border-bottom: 1px solid var(--rule); margin-bottom: 20px; }
+  .sec-icon { width: 28px; height: 28px; background: var(--ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+  .sec-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.3px; }
+  .sec-note { margin-left: auto; font-family: monospace; font-size: 0.58rem; color: #a8a29e; }
+
+  /* MINI GRID */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  @media(max-width:520px){ .grid { grid-template-columns: 1fr; } .logo { font-size: 2rem; } }
+  .mini { border: 1px solid var(--rule); padding: 14px; cursor: pointer; background: none; text-align: left; font-family: Georgia, serif; transition: background 0.1s; }
+  .mini:hover { background: var(--tint); }
+  .mini-src { font-family: monospace; font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .mini-hl { font-size: 0.88rem; font-weight: 700; line-height: 1.35; }
+  .mini-arrow { font-family: monospace; font-size: 0.6rem; color: var(--accent); margin-top: 6px; }
+
+  /* STORIES */
+  .story { padding: 18px 0; border-bottom: 1px solid var(--rule); }
+  .story:last-child { border-bottom: none; }
+  .story.lead { background: var(--ink); color: var(--paper); padding: 20px 24px; margin: 16px 0; border-bottom: none; }
+  .meta { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .tag { font-family: monospace; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; color: #f5f0e8; }
+  .tag-model    { background: #78350f; }
+  .tag-research { background: #1e3a5f; }
+  .tag-product  { background: #3b0764; }
+  .tag-funding  { background: #14532d; }
+  .tag-safety   { background: #7f1d1d; }
+  .tag-infra    { background: #374151; }
+  .tag-api      { background: #1e1b4b; }
+  .tag-editor   { background: #1c1917; }
+  .tag-hot      { background: #7f1d1d; }
+  .tag-launch   { background: #14532d; }
+  .tag-announce { background: #44403c; }
+  .date { font-family: monospace; font-size: 0.58rem; color: var(--muted); }
+  .lead .date { color: #78716c; }
+  .hl { font-size: 1.1rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px; }
+  .lead .hl { font-size: 1.25rem; color: var(--paper); margin-bottom: 10px; }
+  .body { font-size: 0.85rem; line-height: 1.75; color: #3d3830; }
+  .lead .body { color: #d4cec6; }
+  .signal { margin-top: 10px; border-left: 3px solid var(--accent); padding: 5px 12px; background: var(--tint); }
+  .lead .signal { border-left-color: #ca8a04; background: rgba(255,255,255,0.06); }
+  .signal-label { font-family: monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+  .lead .signal-label { color: #ca8a04; }
+  .signal-body { font-size: 0.78rem; color: #57534e; font-style: italic; }
+  .lead .signal-body { color: #c4beb6; }
+
+  /* FOOTER */
+  footer { border-top: 4px solid var(--ink); padding: 14px 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; max-width: 800px; margin: 0 auto; }
+  .ft { font-family: monospace; font-size: 0.58rem; color: var(--muted); }
+  .ft .name { color: var(--accent); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">SIGN<span>A</span>L</div>
+    <div class="sub">Daily AI research brief · Independent edition</div>
+  </div>
+  <div class="datebox">
+    <div class="d">THURSDAY, 03 APRIL 2026</div>
+    <div class="u">Compiled 03 Apr 2026 · Next update on request</div>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="show('overview',this)">Overview</button>
+  <button class="tab" onclick="show('anthropic',this)">Anthropic</button>
+  <button class="tab" onclick="show('meta',this)">Meta / JEPA</button>
+  <button class="tab" onclick="show('google',this)">Google</button>
+  <button class="tab" onclick="show('mistral',this)">Mistral</button>
+  <button class="tab" onclick="show('worldmodels',this)">AMI + World Labs</button>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="overview" class="section active">
+  <div class="sec-head">
+    <div class="sec-icon">◈</div>
+    <div class="sec-title">Today's Top Stories</div>
+    <div class="sec-note">03 Apr 2026</div>
+  </div>
+
+  <div class="grid">
+    <button class="mini" onclick="show('worldmodels',document.querySelectorAll('.tab')[5])">
+      <div class="mini-src">AMI Labs</div>
+      <div class="mini-hl">LeCun's $1.03B JEPA lab officially launched — world models go independent</div>
+      <div class="mini-arrow">→ Your research north-star</div>
+    </button>
+    <button class="mini" onclick="show('meta',document.querySelectorAll('.tab')[2])">
+      <div class="mini-src">JEPA Research</div>
+      <div class="mini-hl">V-JEPA 2.1 published — +20pt robot grasping, dense spatial features</div>
+      <div class="mini-arrow">→ Direct Week 24 material</div>
+    </button>
+    <button class="mini" onclick="show('anthropic',document.querySelectorAll('.tab')[1])">
+      <div class="mini-src">Anthropic</div>
+      <div class="mini-hl">Claude Code source leaked via npm. April Fools tamagotchi pet ships anyway.</div>
+      <div class="mini-arrow">→ Industry chatter</div>
+    </button>
+    <button class="mini" onclick="show('mistral',document.querySelectorAll('.tab')[4])">
+      <div class="mini-src">Mistral</div>
+      <div class="mini-hl">Devstral 2 + Vibe CLI claim 7× cost edge over Claude Sonnet on coding</div>
+      <div class="mini-arrow">→ Open-source front heats up</div>
+    </button>
+    <button class="mini" onclick="show('worldmodels',document.querySelectorAll('.tab')[5])">
+      <div class="mini-src">World Labs</div>
+      <div class="mini-hl">Fei-Fei Li raises $1B for spatial AI — Autodesk anchors with $200M</div>
+      <div class="mini-arrow">→ Physical AI era begins</div>
+    </button>
+    <button class="mini" onclick="show('google',document.querySelectorAll('.tab')[3])">
+      <div class="mini-src">Google DeepMind</div>
+      <div class="mini-hl">Gemini Deep Research opens via API. AGI cognitive taxonomy + $200K Kaggle prize.</div>
+      <div class="mini-arrow">→ Agents go programmable</div>
+    </button>
+  </div>
+
+  <!-- Editor's lead -->
+  <div class="story lead">
+    <div class="meta">
+      <span class="tag tag-editor">Editor's Read</span>
+      <span class="date">Week of 31 Mar – 3 Apr 2026</span>
+    </div>
+    <div class="hl">The World Model Moment Has Arrived — And It's Extremely Well-Funded</div>
+    <div class="body">
+      Three of your seven watch-list items converged this week around the same thesis: AI needs to understand physical reality, not just predict tokens. AMI Labs ($1.03B, LeCun), World Labs ($1B, Fei-Fei Li), and V-JEPA 2.1 (Meta, arXiv) all landed in a six-week window. DeepMind's Genie 3 already ships as a "general-purpose world model." The phrase <em>world model</em> is becoming the new <em>foundation model</em> — every lab wants the label. AMI CEO Alexandre LeBrun predicted this himself: <em>"In six months, every company will call itself a world model to raise funding."</em><br><br>
+      Meanwhile generative AI isn't sleeping. Anthropic ships Opus 4.6 and Sonnet 4.6 on a 2-week cadence. Mistral dropped Devstral 2 claiming 7× cost advantage over Claude Sonnet. Meta's Mango/Avocado are delayed but world-model-adjacent. The structural gap you've identified — between capability claims and physical-world grounding — is exactly what AMI and World Labs are betting billions on.
+    </div>
+    <div class="signal">
+      <div class="signal-label">Signal for your research</div>
+      <div class="signal-body">V-JEPA 2.1 is already published (Mar 15, arXiv:2603.14482). LeWM from LeCun's team solves JEPA's representation collapse end-to-end from pixels. Both are directly on your Week 1→24 path. Start bookmarking now — these will be your deep-dive papers in Week 18–24.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ ANTHROPIC ═══════════════════════════════ -->
+<div id="anthropic" class="section">
+  <div class="sec-head">
+    <div class="sec-icon">A</div>
+    <div class="sec-title">Anthropic</div>
+    <div class="sec-note">anthropic.com/news</div>
+  </div>
+
+  <div class="story lead">
+    <div class="meta"><span class="tag tag-model">Model</span><span class="date">Feb–Apr 2026</span></div>
+    <div class="hl">Opus 4.6 + Sonnet 4.6 — 1M Context, 2-Week Ship Cadence, Anthropic Uses Claude for 60% of Its Own Work</div>
+    <div class="body">
+      Anthropic has been shipping a major Claude update roughly every two weeks. <strong>Opus 4.6</strong> (Feb 5): 1M token context, leads the Finance Agent benchmark, 14.5-hour task horizon — longest of any model at launch. <strong>Sonnet 4.6</strong>: balanced everyday model, improved agentic search, 1M context native (no beta header). The 1M beta for Sonnet 4.5 and Sonnet 4 retires <strong>April 30</strong> — migrate if you're on those. Anthropic engineers now use Claude for ~60% of their work (up from 28% a year ago) and ship 60–100 internal releases per day.
+    </div>
+    <div class="signal">
+      <div class="signal-label">For you</div>
+      <div class="signal-body">Sonnet 4.6 (what you're talking to right now) has the full 1M context window — useful when you start pasting entire JEPA papers into a research session mid-conversation.</div>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-product">Product</span><span class="date">Mar 31, 2026</span></div>
+    <div class="hl">Claude Code Source Leaked via npm — 513K Lines of TypeScript, April Fools Pet "Claude Buddy" Ships Anyway</div>
+    <div class="body">
+      npm package v2.1.88 accidentally shipped a 59.8 MB source map exposing ~513,000 lines of TypeScript across 1,906 files. Mirrored to GitHub, forked tens of thousands of times within hours. Anthropic: no customer data exposed, just a missing <code>.npmignore</code>. Buried in the leak: <strong>Claude Buddy</strong> — a full tamagotchi companion for the Claude Code terminal. 18 species (duck to capybara), 5 rarity tiers, CHAOS and SNARK stats. Your species is deterministically generated from your user ID. Run <code>/buddy</code> in Claude Code v2.1.89+. Developer consensus: make it permanent.
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-product">Product</span><span class="date">Feb 25, 2026</span></div>
+    <div class="hl">Anthropic Acquires Vercept to Advance Computer Use Capabilities</div>
+    <div class="body">
+      Anthropic acquired Vercept to accelerate Claude's ability to interact with desktop GUIs autonomously — clicking, typing, navigating real interfaces. Computer use is moving from demo to product. Claude Desktop remains on Electron; native Win32/WinUI integration for true OS-surface interaction is still a gap.
+    </div>
+    <div class="signal">
+      <div class="signal-label">Relevance</div>
+      <div class="signal-body">This is the exact gap you pitched to Anthropic's desktop team — native platform expertise matters when agents need to interact with real OS surfaces. Your WinUI 3 background is still differentiated here.</div>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-announce">Announcement</span><span class="date">Mar 31, 2026</span></div>
+    <div class="hl">Australian Government Signs AI Safety MOU with Anthropic — Sydney Becomes 4th APAC Office</div>
+    <div class="body">
+      Anthropic signed a Memorandum of Understanding with the Australian government for AI safety research and economic impact tracking. Sydney joins as the 4th Asia-Pacific office. Follows a tense February: the US Department of Defense issued an ultimatum demanding unrestricted military access to Claude or loss of a $200M defense contract. Anthropic published statements holding its usage policy line on lethal autonomous weapons.
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-api">API</span><span class="date">Mar 2026</span></div>
+    <div class="hl">API: 300K Output Token Beta, Web Search GA, Code Execution Free with Search</div>
+    <div class="body">
+      Key developer updates: max_tokens raised to 300K on Batches API for Opus/Sonnet 4.6 (use <code>output-300k-2026-03-24</code> beta header). Web search and programmatic tool calling now generally available — no beta header needed. Sandboxed code execution is free when used with web search or web fetch. Structured outputs GA. Models API now returns capability fields. Haiku 3 deprecation April 19 — migrate to Haiku 4.5.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ META / JEPA ═══════════════════════════════ -->
+<div id="meta" class="section">
+  <div class="sec-head">
+    <div class="sec-icon">M</div>
+    <div class="sec-title">Meta AI &amp; JEPA Research</div>
+    <div class="sec-note">ai.meta.com · arxiv.org</div>
+  </div>
+
+  <div class="story lead">
+    <div class="meta"><span class="tag tag-hot">🔥 Must-Read</span><span class="date">Mar 15, 2026 · arXiv:2603.14482</span></div>
+    <div class="hl">V-JEPA 2.1 — Dense Features, +20 Points Robot Grasping, New SOTA on Anticipation</div>
+    <div class="body">
+      V-JEPA 2.1 drops four key upgrades over V-JEPA 2: (1) <strong>Dense predictive loss</strong> — both visible and masked tokens contribute to training signal, forcing explicit spatial/temporal grounding. (2) <strong>Deep self-supervision</strong> applied hierarchically across multiple encoder layers. (3) <strong>Multi-modal tokenizers</strong> for unified image+video training. (4) Effective scaling in model capacity and data. Results: 7.71 mAP on Ego4D short-term object anticipation · 40.8 Recall@5 on EPIC-KITCHENS (up from 39.7 in V-JEPA 2) · <strong>+20pt real-robot grasping success rate</strong> · 77.7 on Something-Something-V2 · 5.687 ATE on TartanDrive robot navigation.
+    </div>
+    <div class="signal">
+      <div class="signal-label">Direct Week 1–24 curriculum relevance</div>
+      <div class="signal-body">This is the live successor to your Week 24 north-star paper. Read V-JEPA 2 to understand the foundation, V-JEPA 2.1 to see where it evolved. The dense predictive loss is the most significant architectural insight — it's what changes the masking objective from self-supervised "fill in the blank" to genuine spatial grounding.</div>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-research">Research</span><span class="date">Mar 23, 2026 · LeCun et al.</span></div>
+    <div class="hl">LeWorldModel (LeWM) — First JEPA to Train End-to-End from Pixels Without Representation Collapse</div>
+    <div class="body">
+      LeCun, Balestriero et al. (Mila, NYU, Samsung SAIL, Brown) introduce <strong>LeWM</strong>: the first JEPA that trains stably end-to-end from raw pixels using only two loss terms — a next-embedding prediction loss and <strong>SIGReg</strong>, a regularizer enforcing Gaussian-distributed latents via the Cramér-Wold theorem. Previous JEPAs needed stop-gradients, EMA, and frozen encoders to avoid collapse. LeWM eliminates all that — just one tunable hyperparameter versus six. ~15M parameters, trainable on a single GPU in hours, plans <strong>48× faster</strong> than foundation-model-based world models.
+    </div>
+    <div class="signal">
+      <div class="signal-label">Key insight for your research</div>
+      <div class="signal-body">Representation collapse is JEPA's core fragility — why early versions needed EMA tricks. LeWM's SIGReg solution is mathematically elegant and will be essential to understand when you hit the architecture deep-dive weeks. The "why does JEPA need EMA?" question has a clean answer now.</div>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-research">Research</span><span class="date">Jan 2026 · ICLR 2026</span></div>
+    <div class="hl">VL-JEPA — Vision-Language JEPA, 50% Fewer Parameters, Accepted at ICLR 2026</div>
+    <div class="body">
+      Meta's VL-JEPA applies JEPA to vision-language: instead of generating tokens autoregressively, it predicts continuous embeddings of target texts. Results: stronger than standard VLMs with <strong>50% fewer trainable parameters</strong>. Selective decoding reduces operations by 2.85× with no accuracy loss. Architecture: V-JEPA 2 as vision encoder, Llama 3 layers as predictor, EmbeddingGemma-300M as target encoder. Supports open-vocabulary classification, retrieval, and VQA from one model without architecture changes.
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-model">Models</span><span class="date">H1 2026 target</span></div>
+    <div class="hl">Meta's Mango + Avocado Still Delayed — Internal Pressure After Llama 4 Leaderboard Scandal</div>
+    <div class="body">
+      Alexandr Wang (Meta Chief AI Officer) confirmed Mango (image/video gen) and Avocado (coding + reasoning LLM) target H1 2026 but are behind. Llama 4's April 2025 rollout was widely criticized — Meta admitted it submitted a specially optimized leaderboard version, not the shipped model. Internal shake-up followed. Avocado's stated focus on "world models and planning" is notable — Meta is acknowledging the grounding gap. Llama 4 Maverick currently holds the context window record at 10M tokens.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ GOOGLE ═══════════════════════════════ -->
+<div id="google" class="section">
+  <div class="sec-head">
+    <div class="sec-icon">G</div>
+    <div class="sec-title">Google DeepMind</div>
+    <div class="sec-note">deepmind.google/blog</div>
+  </div>
+
+  <div class="story lead">
+    <div class="meta"><span class="tag tag-product">Product</span><span class="date">Apr 1, 2026</span></div>
+    <div class="hl">Gemini Deep Research Agent Opens via Interactions API — Developers Can Now Embed It</div>
+    <div class="body">
+      Google released a significantly more capable Gemini Deep Research agent via a new <strong>Interactions API</strong>. First time developers can embed Google's autonomous research capabilities into their own apps using a Gemini API key from AI Studio. Scores: <strong>46.4% on Humanity's Last Exam</strong> (full set) · 66.1% on DeepSearchQA · 59.2% on BrowseComp. Google also open-sourced <strong>DeepSearchQA</strong> — 900 hand-crafted multi-step web research tasks across 17 fields. Coming to Google Search, NotebookLM, and Google Finance.
+    </div>
+    <div class="signal">
+      <div class="signal-label">For Sentinel / research tooling</div>
+      <div class="signal-body">Deep Research as a programmable API means you could build a pipeline that does continuous surveillance of pharmaceutical signals or epidemiological literature. Worth revisiting for the Sentinel concept if you ever revive it past April 17.</div>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-research">Research</span><span class="date">Mar 17, 2026</span></div>
+    <div class="hl">DeepMind Proposes Cognitive Taxonomy for Measuring AGI — $200K Kaggle Challenge Open Until Apr 16</div>
+    <div class="body">
+      DeepMind published "Measuring Progress Toward AGI: A Cognitive Taxonomy" — a framework from psychology and cognitive science defining 10 key cognitive abilities: Perception, Generation, Attention, Learning, Memory, Reasoning, Metacognition, Executive Functions, Problem Solving + one more. Running a Kaggle hackathon (Mar 17 – <strong>Apr 16</strong>) with $200K prize pool — $10K per track, $25K grand prizes. Results June 1. Directly relevant to your EPDS/world model framing for ICEIS 2026.
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-model">Models</span><span class="date">2025–2026</span></div>
+    <div class="hl">Gemini 3.1 Pro Leads 13/16 Major Benchmarks — Genie 3 Shipping as General-Purpose World Model</div>
+    <div class="body">
+      Gemini 3.1 Pro is the current benchmark king, leading 13 of 16 major leaderboards as of April 2026. <strong>Genie 3</strong>, DeepMind's world model, generates diverse interactive 3D environments and is DeepMind's production answer to the world-model trend. AlphaEvolve (Gemini-powered algorithm-design agent) is being expanded to US National Laboratories under the Genesis Mission DOE partnership.
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-research">Research</span><span class="date">Apr 23, 2026</span></div>
+    <div class="hl">Latest DeepMind Paper: "Dynamic Reflections — Probing Video Representations with Text Alignment"</div>
+    <div class="body">
+      Most recent publication probes video representation quality using text alignment as a signal — how well do learned video representations align with semantic language descriptions? A live research question for the V-JEPA family: does latent-space prediction produce semantically meaningful representations without explicit language supervision? Relevant to your curriculum around Week 16–20.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MISTRAL ═══════════════════════════════ -->
+<div id="mistral" class="section">
+  <div class="sec-head">
+    <div class="sec-icon">Ml</div>
+    <div class="sec-title">Mistral AI</div>
+    <div class="sec-note">mistral.ai/news</div>
+  </div>
+
+  <div class="story lead">
+    <div class="meta"><span class="tag tag-model">Model + Tool</span><span class="date">Mar 23, 2026</span></div>
+    <div class="hl">Devstral 2 + Mistral Vibe CLI — Open-Source Coding Agent, 72.2% SWE-Bench, Claims 7× Cost Edge on Claude Sonnet</div>
+    <div class="body">
+      Mistral released <strong>Devstral 2</strong> in two sizes — 123B (modified MIT) and Devstral Small 2 24B (Apache 2.0). 123B scores <strong>72.2% on SWE-bench Verified</strong> and claims up to <strong>7× more cost-efficient than Claude Sonnet</strong> at real-world coding tasks. Also launched: <strong>Mistral Vibe CLI</strong> — open-source terminal coding agent powered by Devstral, uses Agent Communication Protocol, Apache 2.0. Devstral Small 2 supports image inputs for multimodal agents and is designed for fully private on-device runtime. Surpassed 17B tokens in the first 24 hours of stealth launch.
+    </div>
+    <div class="signal">
+      <div class="signal-label">Relevant for your mlresearch env</div>
+      <div class="signal-body">Devstral Small 2 at 24B under Apache 2.0 is locally runnable. With your RTX 5060 8GB VRAM it'd be tight at full precision, but quantized it might work. Worth benchmarking against Claude Code for your JEPA curriculum code tasks — especially for offline sessions.</div>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-model">Model</span><span class="date">Mar 26, 2026</span></div>
+    <div class="hl">Voxtral TTS — Open-Source Speech Model Small Enough for a Smartwatch, Zero-Shot Voice Cloning</div>
+    <div class="body">
+      Mistral released <strong>Voxtral TTS</strong>: text-to-speech with zero-shot voice cloning, 9 languages (including Hindi), real-time streaming, small enough to run fully on-device on a smartwatch. Priced at $0.016/1K chars via API. Open weights on Hugging Face under CC BY NC 4.0. VP of Science: "Audio is the new UX." Positions Mistral for a full end-to-end voice platform competing with ElevenLabs and OpenAI.
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-model">Model Family</span><span class="date">Dec 2025</span></div>
+    <div class="hl">Mistral 3 Family — Large 3 (675B MoE, Apache 2.0), Ministral Suite, Mistral Small 4</div>
+    <div class="body">
+      <strong>Mistral Large 3</strong>: 41B active / 675B total parameters, sparse MoE, 256K context, trained on 3,000 NVIDIA H200 GPUs. First MoE since Mixtral. All Apache 2.0. Ministral 14B reasoning variant: 85% on AIME '25. <strong>Mistral Small 4</strong>: 119B total / 6B active, MoE, 256K context, text+image inputs, founding member of NVIDIA Nemotron Coalition. Available on Mistral Studio, Amazon Bedrock, Azure Foundry, and HuggingFace.
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-infra">Infrastructure</span><span class="date">Mar 30, 2026</span></div>
+    <div class="hl">Mistral Secures $830M Debt Financing for Paris Data Center — 13,800 Nvidia GB300 GPUs, 44 MW</div>
+    <div class="body">
+      $830M in debt financing to operate a Paris data center with 13,800 Nvidia GB300 GPUs at 44 MW. Target: 200 MW across Europe by end of 2027. Total Mistral funding: ~$2.9B vs. OpenAI's $180B and Anthropic's $59B. ASML took an 11% stake ($1.3B) in September 2025, making Mistral Europe's highest-valued AI startup. European sovereign positioning and open-source moat differentiate it from US labs.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ WORLD MODELS ═══════════════════════════════ -->
+<div id="worldmodels" class="section">
+  <div class="sec-head">
+    <div class="sec-icon">W</div>
+    <div class="sec-title">AMI Labs &amp; World Labs</div>
+    <div class="sec-note">amilabs.xyz · worldlabs.ai</div>
+  </div>
+
+  <div class="story lead">
+    <div class="meta"><span class="tag tag-launch">🌍 Major Launch</span><span class="date">Mar 10, 2026</span></div>
+    <div class="hl">Yann LeCun's AMI Labs Officially Launches — $1.03B Seed, $3.5B Valuation, JEPA as Technical Foundation</div>
+    <div class="body">
+      <strong>Advanced Machine Intelligence (AMI) Labs</strong> launched March 10 with a $1.03B seed — the largest seed in European startup history. Pre-money valuation: $3.5B. Co-led by Cathay Innovation, Greycroft, Hiro Capital, HV Capital, and Bezos Expeditions. Strategic backers: Nvidia, Samsung, Toyota Ventures, Temasek, Mark Cuban, Eric Schmidt, Tim Berners-Lee, Xavier Niel.<br><br>
+      CEO: <strong>Alexandre LeBrun</strong> (ex-Meta FAIR, founder of Nabla). Chairman: <strong>Yann LeCun</strong>. CSO: <strong>Saining Xie</strong>. Chief Research Officer: <strong>Pascale Fung</strong>. Offices: Paris (HQ), New York (LeCun at NYU), Montreal, Singapore. Technical foundation: <strong>JEPA</strong>. Goal: AI that understands 3D physical reality through action-conditioned world models, predicting in latent/representation space rather than pixel or token space. First partner: Nabla (healthcare AI). Will publish papers + open-source code.
+    </div>
+    <div class="signal">
+      <div class="signal-label">Your NPCMind / YC S26 radar</div>
+      <div class="signal-body">AMI Labs is building the foundational layer that NPCMind would sit on top of. JEPA-native NPC cognition is architecturally downstream of exactly what AMI is doing. LeCun's prediction: "In six months, every company will call itself a world model to raise funding." Get your research cred before the field floods — your 25-week curriculum is timed right.</div>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-funding">Funding</span><span class="date">Feb 18, 2026</span></div>
+    <div class="hl">Fei-Fei Li's World Labs Raises $1B — Autodesk Anchors at $200M, Spatial Intelligence as the Next Frontier</div>
+    <div class="body">
+      World Labs closed $1B in new funding (total ~$1.23B since 2024 stealth). Backers: Autodesk ($200M, strategic advisor), AMD, Nvidia, Emerson Collective, Fidelity, Sea. Reported valuation target: ~$5B. Product: <strong>Marble</strong> — generates persistent, high-fidelity 3D worlds from images, video, or text. Available in free/paid tiers, exports Gaussian splats, meshes, video. The Autodesk partnership targets entertainment first, then architecture (Maya, Revit integration possible). Li's framing: <em>"If AI is to be truly useful, it must understand worlds, not just words."</em>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="meta"><span class="tag tag-research">Research Context</span><span class="date">Mar 2026</span></div>
+    <div class="hl">AMI vs. World Labs — Two Bets on the Same Thesis, Different Entry Points</div>
+    <div class="body">
+      Both labs share the same critique: <strong>generative LLMs predict tokens, not reality</strong>. LLMs excel at text, code, math — discrete, low-dimensional, predictable. But physical sensor data (video, robot sensors, 3D) is fundamentally unpredictable at the pixel level — generative approaches break down. World models learn <strong>abstract representations</strong> of environments, ignore unpredictable surface noise, predict in latent space. Action-conditioned variants let agents simulate consequences of actions and plan sequences — the missing link for robotics and autonomous systems.<br><br>
+      <strong>AMI</strong> (LeCun): JEPA-native, abstract latent prediction, targets healthcare/robotics/industrial automation, open research. <strong>World Labs</strong> (Li): spatial/3D intelligence, 3D generation and reasoning, creative/design tools first, robotics as the prize. Different entry points — same endgame.
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div class="ft">SIGNAL · Daily AI Research Brief · For <span class="name">Vignesh Govindhan</span></div>
+  <div class="ft">Sources: Anthropic · Meta AI · Google DeepMind · Mistral · arXiv · TechCrunch · Crunchbase</div>
+</footer>
+
+<script>
+function show(id, tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (tab && tab.classList) tab.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
